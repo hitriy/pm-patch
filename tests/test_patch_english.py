@@ -50,13 +50,30 @@ class FirmwareTests(unittest.TestCase):
     def setUpClass(cls):
         cls.original = Path(FIRMWARE).read_bytes()
 
-    def test_matches_device_tested_output_with_one_byte_difference(self):
+    def test_matches_checksum_corrected_output(self):
         result = patch_english.patch(self.original)
         self.assertEqual(len(result), len(self.original))
         self.assertEqual(hashlib.sha256(result).hexdigest(),
-                         "6a15c7501842f44f042baf84a542767cd6e87b335a3ceeb7ee9f8a189eec95a0")
+                         "13aebc913a39ce96858dd064b5dd30cccf477e545384486b47e18a84ea5fcaba")
         self.assertEqual([(i, a, b) for i, (a, b) in enumerate(zip(self.original, result)) if a != b],
-                         [(0x631D9, 2, 1)])
+                         [(4, 0x24, 0x96), (5, 0xAC, 0x7E),
+                          (0x68, 0x62, 0x24), (0x69, 0xEC, 0xC5), (0x631D9, 2, 1)])
+
+    def test_original_and_output_checksums_with_independent_implementation(self):
+        from test_htfw import reference_crc
+        import struct
+        for data in (self.original, patch_english.patch(self.original)):
+            self.assertEqual(reference_crc(data[6:]), int.from_bytes(data[4:6], "big"))
+            for entry in range(0x38, 0x88, 16):
+                offset, size = struct.unpack_from("<II", data, entry + 8)
+                self.assertEqual(reference_crc(data[0x88 + offset:0x88 + offset + size]),
+                                 int.from_bytes(data[entry:entry + 2], "big"))
+
+    def test_legacy_patched_input_is_rejected(self):
+        data = bytearray(self.original)
+        data[patch_english.PATCH_OFFSET] = 1
+        with self.assertRaisesRegex(ValueError, "already has"):
+            patch_english.patch(data)
 
     def test_already_patched_input_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "already has"):
