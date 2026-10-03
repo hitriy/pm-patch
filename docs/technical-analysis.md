@@ -9,11 +9,12 @@ The patcher supports one complete, original V1.3.3 HTFW update, 2,056,820 bytes 
 | File | SHA-256 |
 |---|---|
 | Original | `d9112f12a37e3731e540b325d2b9788f005de7f640c129ac30465ea1dc57e7a3` |
-| Patched | `6a15c7501842f44f042baf84a542767cd6e87b335a3ceeb7ee9f8a189eec95a0` |
+| Patched, CRCs repaired | `13aebc913a39ce96858dd064b5dd30cccf477e545384486b47e18a84ea5fcaba` |
+| Historical patch, stale CRCs (Windows device-tested) | `6a15c7501842f44f042baf84a542767cd6e87b335a3ceeb7ee9f8a189eec95a0` |
 
-**File offset `0x631D9`: `02` → `01`.** Every other byte, including the HTFW header, strings, menu descriptors, graphics and checksum fields, remains unchanged. Both input and output hashes are checked by the script.
+**Code change at file offset `0x631D9`: `02` → `01`.** The current patcher also updates two 16-bit CRC fields, making five changed bytes in total. Strings, menu descriptors, graphics and all other bytes remain unchanged. Both input and output hashes are checked by the script.
 
-The Windows Sonicake software does not enforce these firmware checksums and was used for the successful flash. The macOS version checks the checksums and returns an error. This patch does not recalculate them. Updater compatibility is based on the owner's tested versions, not a guarantee about future updater releases.
+The Windows Sonicake software did not enforce these firmware checksums and was used for the successful flash of the historical patch. The macOS version rejected that stale-checksum file. The current patcher repairs the CRCs to address this rejection; actual flashing on macOS remains unverified. See [HTFW checksum research](htfw-checksums.md) for coverage, byte order and exact output differences.
 
 ## What selects the language
 
@@ -121,7 +122,7 @@ Ghidra disassembly and decompilation established the code path. Ghidra's emulato
 - All 70 English text pointers and all four English image pointers resolve through the original lookup functions.
 - The separate initialization-comparison alternative produces zero for the tested variant values.
 
-The full HTFW patch was checked against the analyzed instruction context and surrounding code. Its output differs from the original at exactly one byte. The owner then flashed this exact output and confirmed the English UI works.
+The historical full HTFW patch was checked against the analyzed instruction context and surrounding code. That output differed from the original at exactly one byte; the owner flashed it and confirmed the English UI works. The new output retains that code change and repairs the section and whole-file checksums. Tests verify its exact five-byte difference and independently recompute all CRCs. A device test of the checksum-corrected file on macOS is still pending.
 
 Run the public tests without firmware:
 

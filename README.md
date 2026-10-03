@@ -1,6 +1,6 @@
 # Pocket Master English UI — one-byte patch
 
-Switch a Chinese Sonicake Pocket Master to its built-in English UI by changing **one byte** of the official firmware. No translations or UI resources are replaced.
+Switch a Chinese Sonicake Pocket Master to its built-in English UI by changing **one code byte** of the official firmware. The patcher also recalculates the firmware checksums. No translations or UI resources are replaced.
 
 **Tested on a real Chinese Pocket Master with firmware V1.3.3: English UI confirmed working.**
 
@@ -8,9 +8,9 @@ Switch a Chinese Sonicake Pocket Master to its built-in English UI by changing *
 
 - The original **Pocket Master Firmware V1.3.3.bin** update file.
 - [Python 3.8 or newer](https://www.python.org/downloads/).
-- The **Windows version of Sonicake Manager** to install the patched firmware.
+- **Sonicake Manager** to install the patched firmware.
 
-> **Windows only for flashing:** the Windows Sonicake software does not check the firmware checksums and accepts this patch. The macOS version checks them and will return an error. The patcher leaves the checksum fields unchanged.
+> **macOS checksum fix:** older patched files kept stale checksums and were rejected by the macOS updater. This patcher repairs all HTFW section and whole-file CRCs. Regenerate the update from your original firmware. CRC correctness is verified; flashing the corrected file on macOS still needs device confirmation. The English code patch was already tested using Windows.
 
 ## Patch and install
 
@@ -22,7 +22,7 @@ Switch a Chinese Sonicake Pocket Master to its built-in English UI by changing *
    python patch_english.py "Pocket Master Firmware V1.3.3.bin"
    ```
 
-4. In **Sonicake Manager on Windows**, select the generated file:
+4. In **Sonicake Manager**, select the generated file:
 
    ```text
    Pocket Master Firmware V1.3.3_English_1byte.bin
